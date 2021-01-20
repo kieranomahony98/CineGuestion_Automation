@@ -153,20 +153,22 @@ async function makeRequest(queryObj) {
 
 async function filterResults({ movieResults, queryObj }) {
     try {
-        const movieRetun = movieResults.map((movie) => ({
-            movieId: movie.id,
-            movieTitle: movie.title,
-            movieDescription: movie.overview,
-            movieReleaseYear: (movie.release_date) ? movie.release_date.split('-')[0] : undefined,
-            movieGenres: listMatcher(movie.genre_ids).then(genres => genres),
-            moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
-            movieImagePath: movie.poster_path
-        }));
-
+        const movieRetun = movieResults.map(async (movie) => {
+            const genres = await listMatcher(movie.genre_ids);
+            return ({
+                movieId: movie.id,
+                movieTitle: movie.title,
+                movieDescription: movie.overview,
+                movieReleaseYear: (movie.release_date) ? movie.release_date.split('-')[0] : undefined,
+                movieGenres: genres,
+                moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
+                movieImagePath: movie.poster_path
+            })
+        });
         return {
             movieGenerationDate: new Date().toISOString(),
             movieSearchCriteria: queryObj,
-            movies: movieRetun
+            movies: await Promise.all(movieRetun)
         };
     } catch (err) {
         logger.error(`Failed to format movies ${err}`);
@@ -185,6 +187,7 @@ export async function getWeeklyPlaylist(user, lastWeek, type) {
             .then((queryObj) => makeRequest(queryObj))
             .then((results) => filterResults(results))
             .then((sortedMovies) => writeToDB(id, sortedMovies, type))
+            .then((moviesWritten) => moviesWritten)
             .catch(err => {
                 logger.error(err.message);
                 throw err;

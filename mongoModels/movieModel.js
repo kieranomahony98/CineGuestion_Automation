@@ -64,128 +64,129 @@ const MovieSchema = new Schema({
                 ],
         },
     ],
-    userPlaylist: {
-        weeklyPlaylists: [
-            {
-                movieGenerationDate: {
-                    type: String,
-                    required: true,
-                },
-                movieSearchCriteria: {
-                    sort_by: {
-                        type: String,
-                        required: false,
-                    },
-                    with_genres: {
-                        type: Array,
-                        required: false,
-                    },
-                    primary_release_year: {
-                        type: String,
-                        required: false,
-                    },
-                    with_keywords: {
-                        type: String,
-                        required: false
-                    }
-                },
-                movies:
-                    [
-                        {
-                            movieId: {
-                                type: Number,
-                                required: true,
-                            },
-                            movieTitle: {
-                                type: String,
-                                required: true,
-                            },
-                            movieImagePath: {
-                                type: String,
-                                required: true
-                            },
-                            movieDescription: {
-                                type: String,
-                                required: true,
-                            },
-                            movieReleaseYear: {
-                                type: String,
-                                required: false,
-                            },
-                            movieGenres: {
-                                type: String,
-                                required: true,
-                            },
-                            moviePopularity: {
-                                type: String,
-                                required: false,
-                            },
-
-                        },
-                    ],
+    weeklyPlaylists: {
+        type: {
+            movieGenerationDate: {
+                type: String,
+                required: true,
             },
-        ],
-        monthylPlaylists: [
-            {
-                movieGenerationDate: {
+            movieSearchCriteria: {
+                sort_by: {
                     type: String,
-                    required: true,
+                    required: false,
                 },
-                movieSearchCriteria: {
-                    sort_by: {
-                        type: String,
-                        required: false,
-                    },
-                    with_genres: {
-                        type: Array,
-                        required: false,
-                    },
-                    primary_release_year: {
-                        type: String,
-                        required: false,
-                    },
-                    with_keywords: {
-                        type: String,
-                        required: false
-                    }
+                with_genres: {
+                    type: Array,
+                    required: false,
                 },
-                movies:
-                    [
-                        {
-                            movieId: {
-                                type: Number,
-                                required: true,
-                            },
-                            movieTitle: {
-                                type: String,
-                                required: true,
-                            },
-                            movieImagePath: {
-                                type: String,
-                                required: true
-                            },
-                            movieDescription: {
-                                type: String,
-                                required: true,
-                            },
-                            movieReleaseYear: {
-                                type: String,
-                                required: false,
-                            },
-                            movieGenres: {
-                                type: String,
-                                required: true,
-                            },
-                            moviePopularity: {
-                                type: String,
-                                required: false,
-                            },
-
-                        },
-                    ],
+                primary_release_year: {
+                    type: String,
+                    required: false,
+                },
+                with_keywords: {
+                    type: String,
+                    required: false
+                }
             },
-        ],
-    }
+            movies:
+                [
+                    {
+                        movieId: {
+                            type: Number,
+                            required: true,
+                        },
+                        movieTitle: {
+                            type: String,
+                            required: true,
+                        },
+                        movieImagePath: {
+                            type: String,
+                            required: true
+                        },
+                        movieDescription: {
+                            type: String,
+                            required: true,
+                        },
+                        movieReleaseYear: {
+                            type: String,
+                            required: false,
+                        },
+                        movieGenres: {
+                            type: String,
+                            required: true,
+                        },
+                        moviePopularity: {
+                            type: String,
+                            required: false,
+                        },
+
+                    },
+                ],
+        },
+        required: false
+    },
+    monthylPlaylists: {
+        type: {
+
+            movieGenerationDate: {
+                type: String,
+                required: true,
+            },
+            movieSearchCriteria: {
+                sort_by: {
+                    type: String,
+                    required: false,
+                },
+                with_genres: {
+                    type: Array,
+                    required: false,
+                },
+                primary_release_year: {
+                    type: String,
+                    required: false,
+                },
+                with_keywords: {
+                    type: String,
+                    required: false
+                }
+            },
+            movies:
+                [
+                    {
+                        movieId: {
+                            type: Number,
+                            required: true,
+                        },
+                        movieTitle: {
+                            type: String,
+                            required: true,
+                        },
+                        movieImagePath: {
+                            type: String,
+                            required: true
+                        },
+                        movieDescription: {
+                            type: String,
+                            required: true,
+                        },
+                        movieReleaseYear: {
+                            type: String,
+                            required: false,
+                        },
+                        movieGenres: {
+                            type: String,
+                            required: true,
+                        },
+                        moviePopularity: {
+                            type: String,
+                            required: false,
+                        },
+
+                    },
+                ],
+        },
+        required: false
+    },
 });
 
 

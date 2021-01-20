@@ -15,19 +15,19 @@ export async function getMoviesFromDatabase() {
     }
 }
 
-export async function writeToDB(id, results, playlist) {
-    if (type === 'weekly') {
-        const user = MovieSchema.update({ _id: id }, { $set: { 'userPlaylist.weeklyPlaylists': results } })
-            .then((user) => user)
+export async function writeToDB(id, results, type) {
+    if (type === 0) {
+        return await MovieSchema.updateOne({ _id: id }, { $set: { weeklyPlaylists: results } })
+            .then((user) => true)
             .catch((err) => {
-                logger.error(`Failed to find user in database: ${err.message}`);
+                logger.error(`Failed to write to database: ${err.message}`);
                 throw err;
             });
     }
 
-    if (type === 'monthly') {
-        const user = MovieSchema.update({ _id: id }, { $set: { 'userPlaylist.monthylPlaylists': results } })
-            .then((user) => user)
+    if (type === 1) {
+        return await MovieSchema.updateOne({ _id: id }, { $set: { 'userPlaylist.monthylPlaylists': results } })
+            .then((user) => true)
             .catch((err) => {
                 logger.error(`Failed to find user in database: ${err.message}`);
                 throw err;
