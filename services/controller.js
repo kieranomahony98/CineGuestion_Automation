@@ -28,15 +28,6 @@ async function userProcessing(allUsers, lastWeek, type) {
 
 }
 
-async function singleUserProccessing(user) {
-    const promises = [];
-    const weeklyPlaylist = await getWeeklyPlaylist(user.userMovies);
-    return {
-        userId: user.userId,
-        weeklyPlaylist
-    }
-}
-
 export async function getWeeklyPlaylistAllUsers() {
     const lastWeek = new Date().getTime() - (86400000 * 7);
     return (
@@ -55,5 +46,9 @@ export async function getMonthlyPlaylistForUser(lastMonth) {
         getMoviesFromDatabase()
             .then((allUsers) => userProcessing(allUsers, lastMonth, 1))
             .then((playlists) => playlists)
-    )
+            .catch(err => {
+                logger.error(`Failed to get monthly playlists: ${err.message}`);
+                throw err;
+            })
+    );
 }

@@ -71,7 +71,6 @@ async function compareData(leaderBoard) {
     for (const [key, value] of Object.entries(leaderBoard)) {
         try {
             if (leaderBoard.hasOwnProperty(key)) {
-
                 for (const [k, v] of Object.entries(leaderBoard[key])) {
                     if (key === 'with_genres') {
                         if (v > comparedData[key].v) {
@@ -96,14 +95,11 @@ async function compareData(leaderBoard) {
             logger.error(`Failed to compare data: ${err.message}`);
             throw err;
         }
-
-
     }
-
     return comparedData;
 }
 
-async function createQuery({ with_genres, with_keywords, sort_by, primary_release_year }) {
+async function createQuery({ with_genres, with_keywords, sort_by }) {
     try {
         const queryObj = {
             with_genres: (with_genres.k) ? with_genres.k : null,
@@ -127,7 +123,6 @@ async function createQuery({ with_genres, with_keywords, sort_by, primary_releas
             }
         }
         return queryObj;
-
     } catch (err) {
         logger.error(`Failed to create query: ${err.message}`);
         throw err;
@@ -153,7 +148,7 @@ async function makeRequest(queryObj) {
 
 async function filterResults({ movieResults, queryObj }) {
     try {
-        const movieRetun = movieResults.map(async (movie) => {
+        const movieRetun = await Promise.all(movieResults.map(async (movie) => {
             const genres = await listMatcher(movie.genre_ids);
             return ({
                 movieId: movie.id,
@@ -164,11 +159,11 @@ async function filterResults({ movieResults, queryObj }) {
                 moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
                 movieImagePath: movie.poster_path
             })
-        });
+        }));
         return {
             movieGenerationDate: new Date().toISOString(),
             movieSearchCriteria: queryObj,
-            movies: await Promise.all(movieRetun)
+            movies: movieRetun
         };
     } catch (err) {
         logger.error(`Failed to format movies ${err}`);

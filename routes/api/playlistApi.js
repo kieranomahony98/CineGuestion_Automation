@@ -4,14 +4,6 @@ import { getWeeklyPlaylistAllUsers } from '../../services/controller';
 
 const router = express.Router();
 
-router.post('weekly', (req, res) => {
-
-});
-router.post('montly', (req, res) => {
-
-});
-router.post('allTime', (req, res) => {
-});
 
 router.post('/testing', async (req, res) => {
     getWeeklyPlaylistAllUsers()
@@ -21,7 +13,7 @@ router.post('/testing', async (req, res) => {
         .catch(err => {
             logger.error(`Failed to get playlists within route: ${err.message}`);
             return res.send(404).send("Failed to get user movies from database");
-        })
+        });
 })
 export default router;
 
