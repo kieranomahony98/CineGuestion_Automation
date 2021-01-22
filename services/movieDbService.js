@@ -1,3 +1,4 @@
+import { remove } from 'winston';
 import { logger } from '../helpers/logger';
 import MovieSchema from '../mongoModels/movieModel';
 
@@ -16,25 +17,12 @@ export async function getMoviesFromDatabase() {
 }
 
 export async function writeToDB(id, results, type) {
-    if (type === 0) {
-        return await MovieSchema.updateOne({ _id: id }, { $set: { weeklyPlaylists: results } })
-            .then((user) => true)
-            .catch((err) => {
-                logger.error(`Failed to write to database: ${err.message}`);
-                throw err;
-            });
-    }
+    const playlist = (type === 0) ? 'userPlaylists.weeklyPlaylists' : (type === 1) ? 'userPlaylists.monthlyPlaylists' : 'userPlaylists.allTimePlaylists';
 
-    if (type === 1) {
-        return await MovieSchema.updateOne({ _id: id }, { $set: { 'userPlaylist.monthylPlaylists': results } })
-            .then((user) => true)
-            .catch((err) => {
-                logger.error(`Failed to find user in database: ${err.message}`);
-                throw err;
-            });
-    }
+    return await MovieSchema.updateOne({ _id: id }, { $set: { [playlist]: results } })
+        .then((user) => true)
+        .catch((err) => {
+            logger.error(`Failed to write to database: ${err.message}`);
+            throw err;
+        });
 }
-
-
-
-

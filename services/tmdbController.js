@@ -1,4 +1,3 @@
-import { formatDiagnostic } from "typescript";
 import { MovieDb } from 'moviedb-promise';
 import config from 'config';
 
