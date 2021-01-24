@@ -1,7 +1,6 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
-import { doAll, getMonthlyPlaylistForUser, getAllTimePlaylist } from '../../services/controller';
-import { getMoviesFromDatabase } from '../../services/movieDbService';
+import { doAll } from '../../services/controller';
 const router = express.Router();
 
 

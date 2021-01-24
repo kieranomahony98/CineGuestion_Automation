@@ -14,14 +14,12 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(config.get('PORT'), () => {
-    logger.info(`app is listening to port ${config.get('PORT')}`);
+app.listen(process.env.PORT || 8000, () => {
+    logger.info(`app is listening to port ${process.env.PORT}`);
 });
 
-// config mongodb
-const db = config.get('MONGO_URI');
 // connect to db
-mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGOURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         logger.info('Mongoose successfully connected');
     }).catch((err) => {
