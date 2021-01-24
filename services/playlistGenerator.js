@@ -134,15 +134,21 @@ async function createQuery({ with_genres, with_keywords, sort_by }) {
 }
 async function revisedQuery({ with_genres, with_keywords, sort_by }) {
     if (with_keywords) {
+        const keywordsList = with_keywords.split(",");
+        keywordsList.splice(-1, 1);
         return {
             with_genres,
-            with_keywords
+            sort_by,
+            with_keywords: keywordsList.toString()
         }
     }
     if (sort_by) {
-        return with_genres
+        return {
+            with_genres
+        }
     }
 }
+
 async function makeRequest(queryObj) {
     return await movieDb.discoverMovie(queryObj)
         .then((movies) => {
