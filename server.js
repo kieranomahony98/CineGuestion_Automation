@@ -15,7 +15,7 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(8000, () => {
+app.listen(process.env.PORT, () => {
     logger.info(`app is listening to port ${8000}`);
 });
 // connect to db
