@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.listen(process.env.PORT, () => {
-    logger.info(`app is listening to port ${8000}`);
+    logger.info(`app is listening to port ${process.env.PORT}`);
 });
 // connect to db
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
