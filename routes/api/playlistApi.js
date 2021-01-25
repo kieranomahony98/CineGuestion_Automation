@@ -15,6 +15,10 @@ router.post('/testing', async (req, res) => {
         });
 });
 
+router.post('/test', async (req, res) => {
+    res.send("im working");
+});
+
 export default router;
 
 

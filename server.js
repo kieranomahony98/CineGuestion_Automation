@@ -4,6 +4,7 @@ import { logger } from './helpers/logger';
 import cors from 'cors';
 import helmet from 'helmet';
 import config from 'config';
+import "regenerator-runtime/runtime.js";
 import playlistApi from './routes/api/playlistApi';
 import dotenv from 'dotenv';
 dotenv.config();
