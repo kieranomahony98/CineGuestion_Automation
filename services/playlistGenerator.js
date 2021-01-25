@@ -7,19 +7,20 @@ async function filterMovies(movies, date) {
         with_genres: {},
         with_keywords: {},
         sort_by: {}
-    }
+    };
 
-    const moviesThisWeek = movies.filter((movieGeneration) => {
-        if (movieGeneration.movieGenerationDate < date) {
+    const moviesThisWeek = (!date) ? movies : movies.filter((movieGeneration) => {
+        if (movieGeneration.movieGenerationDate >= date) {
             return movieGeneration.movieSearchCriteria;
         }
     });
+
 
     try {
         for (const generation of moviesThisWeek) {
             for (const [key, value] of Object.entries(generation.movieSearchCriteria)) {
                 if (value !== undefined && value != "" && (leaderBoard.hasOwnProperty(key))) {
-                    const values = (key == 'with_genres') ? (generation.movieSearchCriteria["with_genres"][0].split(",")) : (key == 'with_keywords') ? (generation.movieSearchCriteria["with_keywords"].split(",")) : [value];
+                    const values = (key === 'with_genres' || key === 'with_keywords') ? (generation.movieSearchCriteria[key].split(",")) : [value];
                     for (const value of values) {
                         leaderBoard[key][value] = (leaderBoard[key][value]) ? leaderBoard[key][value] + 1 : 1;
                     }
@@ -48,7 +49,6 @@ async function normiliseData({ leaderBoard, count }) {
         logger.error(`Failed to normalise data: ${err.message}`);
         throw err;
     }
-
 }
 
 async function compareData(leaderBoard) {
@@ -71,7 +71,6 @@ async function compareData(leaderBoard) {
     for (const [key, value] of Object.entries(leaderBoard)) {
         try {
             if (leaderBoard.hasOwnProperty(key)) {
-
                 for (const [k, v] of Object.entries(leaderBoard[key])) {
                     if (key === 'with_genres') {
                         if (v > comparedData[key].v) {
@@ -96,14 +95,11 @@ async function compareData(leaderBoard) {
             logger.error(`Failed to compare data: ${err.message}`);
             throw err;
         }
-
-
     }
-
     return comparedData;
 }
 
-async function createQuery({ with_genres, with_keywords, sort_by, primary_release_year }) {
+async function createQuery({ with_genres, with_keywords, sort_by }) {
     try {
         const queryObj = {
             with_genres: (with_genres.k) ? with_genres.k : null,
@@ -115,7 +111,7 @@ async function createQuery({ with_genres, with_keywords, sort_by, primary_releas
         if (mostPopularGenre) {
             for (const c of matchedGenres[mostPopularGenre]) {
                 if (mostPopularGenre !== c) {
-                    queryObj.with_genres = (with_genres) ? `${queryObj.with_genres}, ${c}` : null;
+                    queryObj.with_genres = (with_genres) ? `${queryObj.with_genres},${c}` : null;
                     break;
                 }
             }
@@ -127,40 +123,89 @@ async function createQuery({ with_genres, with_keywords, sort_by, primary_releas
             }
         }
         return queryObj;
-
     } catch (err) {
         logger.error(`Failed to create query: ${err.message}`);
         throw err;
     }
 }
+async function revisedQuery({ with_genres, with_keywords, sort_by }) {
+    if (with_keywords.split(",").length > 1) {
+        const keywordsList = with_keywords.split(",");
+        keywordsList.splice(-1, 1);
+        return {
+            with_genres,
+            sort_by,
+            with_keywords: keywordsList.toString()
+        }
+    }
+    if (sort_by) {
+        return {
+            with_genres
+        }
+    }
+}
+
 async function makeRequest(queryObj) {
-    const movieResults = await movieDb.discoverMovie(queryObj)
+    return await movieDb.discoverMovie(queryObj)
         .then((movies) => {
             if (movies.results) {
                 return movies.results.filter((movie, index) => {
                     return index <= 8;
                 });
             }
+        }).catch((err) => {
+            logger.error(`Failed to make request: ${err.message}`);
+            throw err;
+        });
+}
+
+
+
+async function filterRequest(queryObj) {
+    const movieResults = await makeRequest(queryObj)
+        .then((movies) => {
+            if (!movies) {
+                return null;
+            }
+            return movies
         }).catch(err => {
             logger.error(`Failed to make request: ${err.message}`);
             throw err;
         });
-    return {
-        movieResults,
-        queryObj
+    try {
+        if (!movieResults) {
+            return await filterRequest(await revisedQuery(queryObj));
+        }
+        return {
+            movieResults,
+            queryObj
+        }
+    } catch (err) {
+        logger.error(`Failed to filter request: ${err.message}`);
+        throw err;
     }
+
 }
 
 async function filterResults({ movieResults, queryObj }) {
     try {
-        const movieRetun = movieResults.map((movie) => ({
-            movieId: movie.id,
-            movieTitle: movie.title,
-            movieDescription: movie.overview,
-            movieReleaseYear: (movie.release_date) ? movie.release_date.split('-')[0] : undefined,
-            movieGenres: listMatcher(movie.genre_ids).then(genres => genres),
-            moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
-            movieImagePath: movie.poster_path
+        for (const [key, value] in Object.entries(queryObj)) {
+            if (!value) {
+                delete queryObj[key];
+            }
+        }
+
+        const movieRetun = await Promise.all(movieResults.map(async (movie) => {
+            const genres = await listMatcher(movie.genre_ids);
+            return ({
+                movieId: movie.id,
+                movieTitle: movie.title,
+                movieDescription: movie.overview,
+                movieReleaseYear: (movie.release_date) ? movie.release_date.split('-')[0] : undefined,
+                movieGenres: genres,
+                moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
+                movieImagePath: movie.poster_path
+            })
         }));
 
         return {
@@ -175,16 +220,17 @@ async function filterResults({ movieResults, queryObj }) {
 }
 
 
-export async function getWeeklyPlaylist(user, lastWeek, type) {
+export async function getPlaylist(user, lastWeek, type) {
     const id = user._id;
     return (
         filterMovies(user.userMovies, lastWeek)
             .then((leaderboardObj) => normiliseData(leaderboardObj))
             .then((leaderboard) => compareData(leaderboard))
             .then((sortedData) => createQuery(sortedData))
-            .then((queryObj) => makeRequest(queryObj))
+            .then((queryObj) => filterRequest(queryObj))
             .then((results) => filterResults(results))
             .then((sortedMovies) => writeToDB(id, sortedMovies, type))
+            .then((moviesWritten) => moviesWritten)
             .catch(err => {
                 logger.error(err.message);
                 throw err;
