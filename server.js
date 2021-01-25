@@ -5,7 +5,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import config from 'config';
 import playlistApi from './routes/api/playlistApi';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 
 app.use(cors());
@@ -14,14 +15,11 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(config.get('PORT'), () => {
-    logger.info(`app is listening to port ${config.get('PORT')}`);
+app.listen(8000, () => {
+    logger.info(`app is listening to port ${8000}`);
 });
-
-// config mongodb
-const db = config.get('MONGO_URI');
 // connect to db
-mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         logger.info('Mongoose successfully connected');
     }).catch((err) => {

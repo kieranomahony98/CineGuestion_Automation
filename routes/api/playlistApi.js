@@ -1,20 +1,20 @@
 import express from 'express';
-import { getWeeklyPlaylistAllUsers } from '../../services/controller';
-
+import { logger } from '../../helpers/logger';
+import { doAll } from '../../services/controller';
 const router = express.Router();
 
-router.post('weekly', (req, res) => {
-
-});
-router.post('montly', (req, res) => {
-
-});
-router.post('allTime', (req, res) => {
-});
 
 router.post('/testing', async (req, res) => {
-    res.send(JSON.stringify(await getWeeklyPlaylistAllUsers()));
-})
+    doAll()
+        .then((weeklyPlaylists) => {
+            return res.send(JSON.stringify(weeklyPlaylists));
+        })
+        .catch(err => {
+            logger.error(`Failed to get playlists within route: ${err.message}`);
+            return res.status(404).send("Failed to get user movies from database");
+        });
+});
+
 export default router;
 
 
