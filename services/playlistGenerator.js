@@ -8,23 +8,19 @@ async function filterMovies(movies, date) {
         with_keywords: {},
         sort_by: {}
     };
-    console.log(date);
-    console.log(movies.length);
+
     const moviesThisWeek = (!date) ? movies : movies.filter((movieGeneration) => {
         if (movieGeneration.movieGenerationDate >= date) {
             return movieGeneration.movieSearchCriteria;
         }
     });
-    console.log(moviesThisWeek.length);
-    if (date) {
-        // console.log(moviesThisWeek);ss
-    }
+
 
     try {
         for (const generation of moviesThisWeek) {
             for (const [key, value] of Object.entries(generation.movieSearchCriteria)) {
                 if (value !== undefined && value != "" && (leaderBoard.hasOwnProperty(key))) {
-                    const values = (key == 'with_genres') ? (generation.movieSearchCriteria["with_genres"][0].split(",")) : (key == 'with_keywords') ? (generation.movieSearchCriteria["with_keywords"].split(",")) : [value];
+                    const values = (key === 'with_genres' || key === 'with_keywords') ? (generation.movieSearchCriteria[key].split(",")) : [value];
                     for (const value of values) {
                         leaderBoard[key][value] = (leaderBoard[key][value]) ? leaderBoard[key][value] + 1 : 1;
                     }
@@ -115,7 +111,7 @@ async function createQuery({ with_genres, with_keywords, sort_by }) {
         if (mostPopularGenre) {
             for (const c of matchedGenres[mostPopularGenre]) {
                 if (mostPopularGenre !== c) {
-                    queryObj.with_genres = (with_genres) ? `${queryObj.with_genres}, ${c}` : null;
+                    queryObj.with_genres = (with_genres) ? `${queryObj.with_genres},${c}` : null;
                     break;
                 }
             }
@@ -133,7 +129,7 @@ async function createQuery({ with_genres, with_keywords, sort_by }) {
     }
 }
 async function revisedQuery({ with_genres, with_keywords, sort_by }) {
-    if (with_keywords) {
+    if (with_keywords.split(",").length > 1) {
         const keywordsList = with_keywords.split(",");
         keywordsList.splice(-1, 1);
         return {
@@ -193,6 +189,12 @@ async function filterRequest(queryObj) {
 
 async function filterResults({ movieResults, queryObj }) {
     try {
+        for (const [key, value] in Object.entries(queryObj)) {
+            if (!value) {
+                delete queryObj[key];
+            }
+        }
+
         const movieRetun = await Promise.all(movieResults.map(async (movie) => {
             const genres = await listMatcher(movie.genre_ids);
             return ({
