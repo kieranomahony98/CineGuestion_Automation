@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
-    "build": "mkdir dist && babel . --ignore node_modules -s -d dist",
+    "build": "mkdir dist && babel . -s -d dist",
     "local": "PORT=8000 babel-node server.js"
   },
   "dependencies": {
