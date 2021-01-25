@@ -1,0 +1,1 @@
+{"version":3,"sources":["../babel.config.js"],"names":["presets","module","exports"],"mappings":";;AAAA,IAAMA,OAAO,GAAG,CACZ,CACI,mBADJ,CADY,CAAhB;AAMAC,MAAM,CAACC,OAAP,GAAiB;AAAEF,EAAAA,OAAO,EAAPA;AAAF,CAAjB","sourcesContent":["const presets = [\n    [\n        \"@babel/preset-env\",\n    ]\n];\n\nmodule.exports = { presets };"],"file":"babel.config.js"}
