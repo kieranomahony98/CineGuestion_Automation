@@ -15,6 +15,18 @@ cron.schedule('0 0 0 1 * *', () => {
     getMonthlyPlaylistForUser(date);
 });
 
+cron.schedule('0 0 0 * * 1', () => {
+    const thisMonth = new Date().getMonth();
+    const lastMonth = (thisMonth == 0) ? new Date().setMonth(11) : new Date().setMonth(thisMonth - 1);
+    const date = new Date(lastMonth).toISOString();
+    getMonthlyPlaylistForUser(date);
+    getTrendingNow();
+});
+
+cron.schedule('* * * * * *', () => {
+    console.log('in job for demo');
+});
+
 async function userProcessing(allUsers, date, type) {
     try {
         const userPlaylists = [];
@@ -34,7 +46,7 @@ async function playlistCreationController(type, date) {
             .then((allUsers) => userProcessing(allUsers, date, type))
             .then((playlists) => playlists)
             .catch((err) => {
-                logger.error(`Failed to get weekly playlists: ${err.message}`);
+                logger.error(`Failer in controller: ${err.message}`);
                 throw err;
             }));
 }
@@ -44,7 +56,7 @@ export async function getWeeklyPlaylist() {
     return await playlistCreationController(0, new Date(lastWeek).toISOString())
         .then((playlists) => playlists)
         .catch((err) => {
-            logger.error(`Failed to get playlists: ${err.message}`);
+            logger.error(`Failed to get weeekly playlists: ${err.message}`);
         });
 }
 
@@ -63,12 +75,32 @@ export async function getAllTimePlaylist() {
     return await playlistCreationController(2, null)
         .then((playlists) => playlists)
         .catch((err) => {
-            logger.error(`Failed to get playlists: ${err.message}`);
+            logger.error(`Failed to get all time playlists: ${err.message}`);
         });
 }
+
+async function getTrendingNow() {
+    let lastWeek = new Date().getTime() - (86400000);
+    lastWeek = new Date(lastWeek).toISOString();
+    return await getMoviesFromDatabase()
+        .then(async (allUserData) => {
+            const userMovies = [].concat.apply([], allUserData.map((user) => {
+                return user.userMovies.filter((generation) => generation.movieGenerationDate >= lastWeek);
+            }));
+            const playlist = await getPlaylist(userMovies, null, 3)
+                .then((playlist) => playlist)
+                .catch((err) => {
+                    logger.error(`failed to get playlists: ${err.message}`);
+                })
+            return playlist;
+        });
+}
+
 export async function doAll() {
+    await getWeeklyPlaylist();
     await getMonthlyPlaylistForUser();
     await getAllTimePlaylist();
-    await getWeeklyPlaylist();
+    await getTrendingNow();
     return true
 }
+

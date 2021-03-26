@@ -20,9 +20,11 @@ app.listen(process.env.PORT, () => {
     logger.info(`app is listening to port ${process.env.PORT}`);
 });
 // connect to db
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
+export const db = mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then((db) => {
         logger.info('Mongoose successfully connected');
+        return db;
+
     }).catch((err) => {
         logger.error(err);
     });
